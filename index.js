@@ -67,7 +67,8 @@ module.exports = function (opts, cb) {
         if (src._handled) return;
         src._handled = true;
         
-        var bounce = function (dst) {
+        var bounce = function (dst, opts) {
+            opts = opts || {};
             var args = {};
             if (!dst || typeof dst.pipe !== 'function') {
                 args = parseArgs(arguments);
@@ -86,7 +87,12 @@ module.exports = function (opts, cb) {
                 ? src.pipe(insert(args))
                 : src
             ;
-            s.pipe(dst).pipe(req.connection);
+            if(opts.resHookStream){
+              s.pipe(dst).pipe(opts.resHookStream).pipe(req.connection);
+            }
+            else {
+              s.pipe(dst).pipe(req.connection);
+            }
             
             nextTick(function () { src._resume() });
             return dst;
